@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Exec=ovirt-auto-connect
+Name=oVirt Auto Connect
+Categories=Network;RemoteAccess;
