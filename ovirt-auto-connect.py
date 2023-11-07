@@ -116,4 +116,4 @@ file = get_vv_file(user, password, profile, vm)
 with open(VV_PATH, "w") as f:
 	f.write(file)
 
-p = subprocess.Popen([REMOTE_VIEWER_PATH, '--auto-resize=always', VV_PATH], start_new_session=True)
+p = subprocess.Popen([REMOTE_VIEWER_PATH, VV_PATH], start_new_session=True)
