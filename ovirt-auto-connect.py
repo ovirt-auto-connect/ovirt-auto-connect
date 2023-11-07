@@ -14,10 +14,10 @@ VV_PATH='/tmp/srw.vv'
 
 def get_vv_file(user, password, profile, vm=None):
 	with sdk.Connection(
-		url='https://ovirt.eltex.loc//ovirt-engine/api',
+		url='https://ovirt.eltex.loc/ovirt-engine/api',
 		username=f'{user}@{profile}',
 		password=password,
-		ca_file='/etc/ssl/certs/Eltex_Root_CA.pem',
+		ca_file='/etc/ssl/certs/EltexRootCA.pem',
 	) as connection:
 		system_service = connection.system_service()
 		vms_service = system_service.vms_service()
