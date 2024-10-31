@@ -57,6 +57,13 @@ def get_vv_file(user, password, profile, vm=None):
 		console_service = consoles_service.console_service(console.id)
 		return console_service.remote_viewer_connection_file()
 
+backend = keyring.core.load_keyring('keyrings.alt.file.PlaintextKeyring')
+if not backend:
+	print("Required keyring not installed")
+	exit(1)
+
+keyring.set_keyring(backend)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-u', '--user', help='LDAP username', dest='user')
 parser.add_argument('-p', '--profile', help='oVirt profile', dest='profile')

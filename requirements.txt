@@ -1,3 +1,4 @@
 ovirt-engine-sdk-python
 keyring
+keyrings.alt
 argparse
