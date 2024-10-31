@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if which python > /dev/null 2>&1 || which python3 > /dev/null 2>&1; then
 	python_version=`python --version 2>&1 | awk '{print $2}'`
 	echo "Python version $python_version is installed"
@@ -16,7 +18,9 @@ else
 	exit 1
 fi
 
-sudo pip install --break-system-packages -r requirements.txt
+if ! sudo pip install -r requirements.txt ; then
+	sudo pip install --break-system-packages -r requirements.txt
+fi
 sudo install -m 755 "ovirt-auto-connect.py" /usr/local/bin/ovirt-auto-connect
 sudo mkdir -p /usr/share/applications
 sudo install -m 644 "ovirt-auto-connect.desktop" /usr/share/applications/
