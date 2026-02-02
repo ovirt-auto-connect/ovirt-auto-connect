@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import ovirtsdk4 as sdk
 import ovirtsdk4.types as types
@@ -8,16 +8,22 @@ import getpass
 import time
 import subprocess
 import keyring
+import os
+import sys
 
 REMOTE_VIEWER_PATH='/usr/bin/remote-viewer'
 VV_PATH='/tmp/srw.vv'
 
 def get_vv_file(user, password, profile, vm=None):
+	ca_file='/etc/ssl/certs/EltexRootCA.pem'
+	if not os.path.exists(ca_file):
+		ca_file='/usr/local/etc/ssl/certs/EltexRootCA.pem'
+
 	with sdk.Connection(
 		url='https://ovirt.eltex.loc/ovirt-engine/api',
 		username=f'{user}@{profile}',
 		password=password,
-		ca_file='/etc/ssl/certs/EltexRootCA.pem',
+		ca_file=ca_file,
 	) as connection:
 		system_service = connection.system_service()
 		vms_service = system_service.vms_service()
@@ -123,4 +129,7 @@ file = get_vv_file(user, password, profile, vm)
 with open(VV_PATH, "w") as f:
 	f.write(file)
 
-p = subprocess.Popen([REMOTE_VIEWER_PATH, VV_PATH], start_new_session=True)
+if sys.platform == 'darwin':
+	subprocess.Popen(['open', '-a', 'aSPICE', VV_PATH], start_new_session=True)
+else:
+	subprocess.Popen([REMOTE_VIEWER_PATH, VV_PATH], start_new_session=True)

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+unset VIRTUAL_ENV
+unset PYTHONPATH
+unset PYTHONHOME
+exec /usr/local/lib/ovirt-auto-connect/venv/bin/python /usr/local/lib/ovirt-auto-connect/ovirt-auto-connect.py "$@"
