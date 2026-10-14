@@ -63,6 +63,18 @@ def get_vv_file(user, password, profile, vm=None):
 		console_service = consoles_service.console_service(console.id)
 		return console_service.remote_viewer_connection_file()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-u', '--user', help='LDAP username', dest='user')
+parser.add_argument('-p', '--profile', help='oVirt profile', dest='profile')
+parser.add_argument('-v', '--vm', help='VM name', dest='vm', nargs='?')
+parser.add_argument('-s', '--setup', help='Initial setup', action='store_true')
+parser.add_argument(
+	'--viewer-backend', choices=('auto', 'x11', 'wayland'),
+	help='Save local remote-viewer backend and exit without connecting '
+	     '(default: auto; preserves environment; not applied to macOS aSPICE)',
+)
+args = parser.parse_args()
+
 backend = keyring.core.load_keyring('keyrings.alt.file.PlaintextKeyring')
 if not backend:
 	print("Required keyring not installed")
@@ -70,12 +82,10 @@ if not backend:
 
 keyring.set_keyring(backend)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-u', '--user', help='LDAP username', dest='user')
-parser.add_argument('-p', '--profile', help='oVirt profile', dest='profile')
-parser.add_argument('-v', '--vm', help='VM name', dest='vm', nargs='?')
-parser.add_argument('-s', '--setup', help='Initial setup', action='store_true')
-args = parser.parse_args()
+if args.viewer_backend is not None:
+	keyring.set_password("ovirt-no-pass", "viewer-backend", args.viewer_backend)
+	print('Saved viewer backend:', args.viewer_backend)
+
 
 if args.setup:
 	user = input('Enter username for oVirt\n')
@@ -107,6 +117,13 @@ if args.user or args.profile:
 	print('Set credentials successful')
 	exit(0)
 
+if args.viewer_backend is not None:
+	exit(0)
+
+viewer_backend = keyring.get_password("ovirt-no-pass", "viewer-backend") or 'auto'
+if viewer_backend not in ('auto', 'x11', 'wayland'):
+	parser.error('Invalid saved viewer backend; reset with --viewer-backend auto')
+
 user = keyring.get_password("ovirt-no-pass", "user")
 password = keyring.get_password("ovirt-no-pass", "password")
 profile = keyring.get_password("ovirt-no-pass", "profile")
@@ -132,4 +149,9 @@ with open(VV_PATH, "w") as f:
 if sys.platform == 'darwin':
 	subprocess.Popen(['open', '-a', 'aSPICE', VV_PATH], start_new_session=True)
 else:
-	subprocess.Popen([REMOTE_VIEWER_PATH, VV_PATH], start_new_session=True)
+	viewer_env = os.environ.copy()
+	if viewer_backend != 'auto':
+		viewer_env['GDK_BACKEND'] = viewer_backend
+	subprocess.Popen(
+		[REMOTE_VIEWER_PATH, VV_PATH], start_new_session=True, env=viewer_env,
+	)
